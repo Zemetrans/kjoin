@@ -30,7 +30,7 @@ $> scons WS=off
 binaries for samples are located at `~/kjoin/ajtcl/samples/basic`
 
 
-### build tiny core library and samples
+### build alljoin standard core library and samples
 
 ```
 $> cd ~/kjoin/alljoin
