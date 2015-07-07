@@ -43,12 +43,14 @@ $> scons BINDINGS=cpp WS=off BT=off ICE=off SERVICES="about,notification,control
 ```
 $> export LD_LIBRARY_PATH=~/kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/lib
 
-$> kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/bin/aservice
-BusAttachment started.
-BusAttachment connect succeeded. BusAttachment Unique name is :DLY4-aX2.2
-BindSessionPort succeeded.
-AboutObj Announce Succeeded.
+$> kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/bin/alljoyn-daemon
+AllJoyn Message Bus Daemon version: v0.00.01
+Copyright AllSeen Alliance.
 
+Build: AllJoyn Library v0.00.01 (Built Tue Jul 07 17:59:57 UTC 2015 by dea - Git: alljoyn.git branch: 'master' tag: 'v15.04x-rc2' (+199 changes) commit ref: 578d67de81fb67c3924386acc333cee8d7bb558b)
+Setting up transport for address: tcp:iface=*,port=9955
+Setting up transport for address: udp:iface=*,port=9955
+Setting up transport for address: unix:abstract=alljoyn
 ```
 
 ### in another terminal run tiny core basic sevice
