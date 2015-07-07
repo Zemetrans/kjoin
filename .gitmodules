@@ -1,0 +1,3 @@
+[submodule "ajtcl"]
+	path = ajtcl
+	url = https://git.allseenalliance.org/gerrit/core/ajtcl.git
