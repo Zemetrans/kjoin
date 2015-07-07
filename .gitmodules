@@ -1,3 +1,6 @@
 [submodule "ajtcl"]
 	path = ajtcl
 	url = https://git.allseenalliance.org/gerrit/core/ajtcl.git
+[submodule "alljoyn"]
+	path = alljoyn
+	url = https://git.allseenalliance.org/gerrit/core/alljoyn.git
