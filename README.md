@@ -27,13 +27,10 @@ $> cd ~/kjoin/ajtcl
 $> scons WS=off
 ```
 
-binaries for samples are located at `~/kjoin/ajtcl/samples/basic`
-
-
 ### build alljoin standard core library and samples
 
 ```
-$> cd ~/kjoin/alljoin
+$> cd ~/kjoin/alljoyn
 
 $> scons BINDINGS=cpp WS=off BT=off ICE=off SERVICES="about,notification,controlpanel,config,onboarding,sample_apps"
 ```
@@ -43,7 +40,7 @@ $> scons BINDINGS=cpp WS=off BT=off ICE=off SERVICES="about,notification,control
 ```
 $> export LD_LIBRARY_PATH=~/kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/lib
 
-$> kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/bin/alljoyn-daemon
+$> ~/kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/bin/alljoyn-daemon
 AllJoyn Message Bus Daemon version: v0.00.01
 Copyright AllSeen Alliance.
 
@@ -56,6 +53,7 @@ Setting up transport for address: unix:abstract=alljoyn
 ### in another terminal run tiny core basic sevice
 
 ```
+$> cd
 $> ~/kjoin/ajtcl/samples/basic/basic_service 
 000.000 aj_target_nvram.c:86 _AJ_LoadNVFromFile(): LoadNVFromFile() failed. status=AJ_ERR_FAILURE
 Reminder: Object not yet added to the ObjectList, do not forget to call RegisterObjects
