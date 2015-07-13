@@ -6,7 +6,7 @@ https://help.github.com/articles/generating-ssh-keys/
 ## cloning the repository
 git clone --recursive git@github.com:jenisov/kjoin.git ~/kjoin
 
-## AllJoin Tiny Core
+## AllJoin Thin Core
 https://allseenalliance.org/developers/learn/core/thin-core
 
 ## building and testing samples
