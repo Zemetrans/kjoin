@@ -6,7 +6,7 @@ https://help.github.com/articles/generating-ssh-keys/
 ## cloning the repository
 git clone --recursive git@github.com:jenisov/kjoin.git ~/kjoin
 
-## AllJoin Tiny Core
+## AllJoin Thin Core
 https://allseenalliance.org/developers/learn/core/thin-core
 
 ## building and testing samples
@@ -19,7 +19,7 @@ Assume we are using Ubuntu LTS 14.04 x86 64bit
 
 `$> sudo apt-get install python scons`
 
-### build tiny core library and samples
+### build thin core library and samples
 
 ```
 $> cd ~/kjoin/ajtcl
@@ -27,13 +27,10 @@ $> cd ~/kjoin/ajtcl
 $> scons WS=off
 ```
 
-binaries for samples are located at `~/kjoin/ajtcl/samples/basic`
-
-
 ### build alljoin standard core library and samples
 
 ```
-$> cd ~/kjoin/alljoin
+$> cd ~/kjoin/alljoyn
 
 $> scons BINDINGS=cpp WS=off BT=off ICE=off SERVICES="about,notification,controlpanel,config,onboarding,sample_apps"
 ```
@@ -43,7 +40,7 @@ $> scons BINDINGS=cpp WS=off BT=off ICE=off SERVICES="about,notification,control
 ```
 $> export LD_LIBRARY_PATH=~/kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/lib
 
-$> kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/bin/alljoyn-daemon
+$> ~/kjoin/alljoyn/build/linux/x86_64/debug/dist/cpp/bin/alljoyn-daemon
 AllJoyn Message Bus Daemon version: v0.00.01
 Copyright AllSeen Alliance.
 
@@ -53,9 +50,10 @@ Setting up transport for address: udp:iface=*,port=9955
 Setting up transport for address: unix:abstract=alljoyn
 ```
 
-### in another terminal run tiny core basic sevice
+### in another terminal run thin core basic sevice
 
 ```
+$> cd
 $> ~/kjoin/ajtcl/samples/basic/basic_service 
 000.000 aj_target_nvram.c:86 _AJ_LoadNVFromFile(): LoadNVFromFile() failed. status=AJ_ERR_FAILURE
 Reminder: Object not yet added to the ObjectList, do not forget to call RegisterObjects
@@ -74,7 +72,7 @@ Reminder: Object not yet added to the ObjectList, do not forget to call Register
 
 ```
 
-### in third terminal run tiny core basic client
+### in third terminal run thin core basic client
 
 ```
 $ ~/kjoin/ajtcl/samples/basic/basic_client
