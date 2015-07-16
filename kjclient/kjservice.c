@@ -24,6 +24,7 @@
 #include <aj_debug.h>
 #include <alljoyn.h>
 #include <keapi.h>
+#include <time.h>
 
 static const char ServiceName[] = "org.alljoyn.Bus.sample";
 static const char ServicePath[] = "/sample";
@@ -206,7 +207,7 @@ int main()
 	KEApiLibInitialize();
 	KEAPI_BOARD_INFO pBoardInfo;
 	KEApiGetBoardInfo(&pBoardInfo);
-	printf("Board Name: %s\nBoard Manufacturer %s\n", pBoardInfo.boardName, pBoardInfo.boardManufacturer);
+	printf("Board Name: %s\nBoard Manufacturing Date: %s\n", pBoardInfo.boardName, ctime(&pBoardInfo.manufacturingDate));
 	KEApiLibUnInitialize();
 	return 0;
 	return AJ_Main();
