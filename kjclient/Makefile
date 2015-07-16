@@ -2,8 +2,8 @@ PRG = kjclient
 
 AJTCL_BASE = ..
 
-CFLAGS = -O0 -g -Wall -static -DAJ_MAIN -I$(AJTCL_BASE)/ajtcl/inc -I$(AJTCL_BASE)/ajtcl/target/linux
-LDFLAGS = -L$(AJTCL_BASE)/ajtcl -lajtcl_st -lpthread -lcrypto
+CFLAGS = -O0 -g -Wall -static -DAJ_MAIN -I/usr/include/keapi -I$(AJTCL_BASE)/ajtcl/inc -I$(AJTCL_BASE)/ajtcl/target/linux
+LDFLAGS = -L$(AJTCL_BASE)/ajtcl -lkeapi -lajtcl_st -lpthread -lcrypto
 
 CC = gcc
 

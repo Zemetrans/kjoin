@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <aj_debug.h>
 #include <alljoyn.h>
+#include <keapi.h>
 
 static const char ServiceName[] = "org.alljoyn.Bus.sample";
 static const char ServicePath[] = "/sample";
@@ -199,8 +200,16 @@ int AJ_Main(void)
 }
 
 #ifdef AJ_MAIN
+
 int main()
-{
-    return AJ_Main();
+{	
+	printf("TEST\n");
+	KEApiLibInitialize();
+	PKEAPI_BOARD_INFO pBoardInfo;
+	KEApiGetBoardInfo(pBoardInfo);
+	printf("After GetBoard\n");
+	printf("Name: %s\n", *pBoardInfo.boardName);
+	KEApiLibUnInitialize();
+	return AJ_Main();
 }
 #endif
