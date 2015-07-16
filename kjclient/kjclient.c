@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <aj_debug.h>
 #include <alljoyn.h>
+#include <keapi/keapi.h>
+#include <time.h>
 
 static const char ServiceName[] = "org.alljoyn.Bus.sample";
 static const char ServicePath[] = "/sample";
@@ -102,6 +104,20 @@ void MakeMethodCall(AJ_BusAttachment* bus, uint32_t sessionId)
 
 int AJ_Main(void)
 {
+    KEApiLibInitialize();
+    KEAPI_BOARD_INFO BoardInfo;
+    KEApiGetBoardInfo(&BoardInfo);
+    printf("Board Name: %s\n", BoardInfo.boardName);
+
+
+
+
+
+    printf("Board Time: %s\n", ctime(&BoardInfo.manufacturingDate));
+
+
+
+
     AJ_Status status = AJ_OK;
     AJ_BusAttachment bus;
     uint8_t connected = FALSE;
@@ -194,7 +210,7 @@ int AJ_Main(void)
     }
 
     AJ_AlwaysPrintf(("Basic client exiting with status %d.\n", status));
-
+    KEApiLibUnInitialize();
     return status;
 }
 
