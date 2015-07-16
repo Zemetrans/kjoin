@@ -33,5 +33,4 @@ int main()
 	printf("Board Name: %s\nBoard Manufacturing Date: %s\n", pBoardInfo.boardName, ctime(&pBoardInfo.manufacturingDate));
 	KEApiLibUnInitialize();
 	return 0;
-	return AJ_Main();
 }
