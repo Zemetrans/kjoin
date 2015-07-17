@@ -24,8 +24,8 @@
 #include <aj_debug.h>
 #include <alljoyn.h>
 
-static const char ServiceName[] = "ru.rtsoft.dev.kjoin";
-static const char ServicePath[] = "/keapi";
+static const char ServiceName[] = "org.alljoyn.Bus.sample";
+static const char ServicePath[] = "/sample";
 static const uint16_t ServicePort = 25;
 
 /*
@@ -41,10 +41,10 @@ uint8_t dbgBASIC_CLIENT = 0;
  * See also .\inc\aj_introspect.h
  */
 static const char* const sampleInterface[] = {
-    "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
+    "org.alljoyn.Bus.sample",   /* The first entry is the interface name. */
     "?Dummy foo<i",             /* This is just a dummy entry at index 0 for illustration purposes. */
     "?Dummy2 fee<i",            /* This is just a dummy entry at index 1 for illustration purposes. */
-    "?boardName outStr>s", /* Method at index 2. */
+    "?cat inStr1<s inStr2<s outStr>s", /* Method at index 2. */
     NULL
 };
 
@@ -88,6 +88,10 @@ void MakeMethodCall(AJ_BusAttachment* bus, uint32_t sessionId)
     AJ_Message msg;
 
     status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_CAT, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
+
+    if (status == AJ_OK) {
+        status = AJ_MarshalArgs(&msg, "ss", "Hello ", "World!");
+    }
 
     if (status == AJ_OK) {
         status = AJ_DeliverMsg(&msg);
@@ -151,7 +155,7 @@ int AJ_Main(void)
                     status = AJ_UnmarshalArg(&msg, &arg);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s'.\n", fullServiceName, "boardName",
+                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s'.\n", fullServiceName, "cat",
                                          ServicePath, arg.val.v_string));
                         done = TRUE;
                     } else {
