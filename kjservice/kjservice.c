@@ -70,9 +70,9 @@ static const AJ_Object AppObjects[] = {
  *
  * See also .\inc\aj_introspect.h
  */
-#define BASIC_SERVICE_CAT AJ_APP_MESSAGE_ID(0, 0, 0)
+#define BASIC_SERVICE_BOARDINFO AJ_APP_MESSAGE_ID(0, 0, 0)
 
-static AJ_Status AppHandleCat(AJ_Message* msg)
+static AJ_Status AppHandleInfo(AJ_Message* msg)
 {
 #define BUFFER_SIZE 256
     char buffer[BUFFER_SIZE];
@@ -155,8 +155,8 @@ int AJ_Main(void)
                 }
                 break;
 
-            case BASIC_SERVICE_CAT:
-                status = AppHandleCat(&msg);
+            case BASIC_SERVICE_BOARDINFO:
+                status = AppHandleInfo(&msg);
                 break;
 
             case AJ_SIGNAL_SESSION_LOST_WITH_REASON:

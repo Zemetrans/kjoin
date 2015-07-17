@@ -74,7 +74,7 @@ static const AJ_Object AppObjects[] = {
  *
  * See also .\inc\aj_introspect.h
  */
-#define BASIC_CLIENT_CAT AJ_PRX_MESSAGE_ID(0, 0, 0)
+#define BASIC_CLIENT_BOARDINFO AJ_PRX_MESSAGE_ID(0, 0, 0)
 
 #define CONNECT_TIMEOUT    (1000 * 60)
 #define UNMARSHAL_TIMEOUT  (1000 * 5)
@@ -85,7 +85,7 @@ void MakeMethodCall(AJ_BusAttachment* bus, uint32_t sessionId)
     AJ_Status status;
     AJ_Message msg;
 
-    status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_CAT, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
+    status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_BOARDINFO, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
 
     if (status == AJ_OK) {
         status = AJ_DeliverMsg(&msg);
@@ -142,7 +142,7 @@ int AJ_Main(void)
 
         if (AJ_OK == status) {
             switch (msg.msgId) {
-            case AJ_REPLY_ID(BASIC_CLIENT_CAT):
+            case AJ_REPLY_ID(BASIC_CLIENT_BOARDINFO):
                 {
                     AJ_Arg arg;
 
