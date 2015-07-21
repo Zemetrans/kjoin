@@ -49,7 +49,9 @@ int main()
    	printf("%s", buf);
    	printf("%s\n",buf1);
    }
-   	
+   char s[5] ="5";
+   int d = atoi(s);
+   printf("After atoi: %d\n", d);
    return 0;
 }
 

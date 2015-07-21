@@ -40,8 +40,8 @@ static const char* const sampleInterface[] = {
     "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
     "?boardName outStr>s", /* Method at index 0. */
     "?countSensor outStr>s",
-    "?sensorValue in<i out>s",
-    "?sensorInfo in<i out>s",
+    "?sensorValue inStr<i outStr>s",
+    "?sensorInfo inStr<i outStr>s",
     NULL
 };
 
@@ -112,12 +112,37 @@ static AJ_Status AppHandleCount(AJ_Message* msg)
     int32_t TempSensorCount;
     AJ_Message reply;
     AJ_Arg replyArg;
-    
-    printf("Before Reply\n");
+      
     AJ_MarshalReplyMsg(msg, &reply);
-    printf("After Reply\n");
+    
     KEApiGetTempSensorCount(&TempSensorCount);
     sprintf(buf, "%d", TempSensorCount);
+    printf("Test sprintf: %s\n", buf);
+    KEApiLibUnInitialize();
+    
+    AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
+    AJ_MarshalArg(&reply, &replyArg);
+    return AJ_DeliverMsg(&reply);
+    
+#undef BUFFER_SIZE
+}
+
+static AJ_Status AppHandleValue(AJ_Message* msg)
+{
+#define BUFFER_SIZE 256
+    int num;
+    printf("Enter AHV\n");
+    char buf[BUFFER_SIZE];
+    KEApiLibInitialize();
+    KEAPI_SENSOR_VALUE SensorValue;
+    AJ_Message reply;
+    AJ_Arg replyArg;
+    
+    AJ_UnmarshalArgs(msg, "i", &num);
+    AJ_MarshalReplyMsg(msg, &reply);
+    
+    KEApiGetTempSensorValue(num, &SensorValue);
+    sprintf(buf,"Sensor %d, temp = %d,  status: %d\n", num, SensorValue.value, SensorValue.status);
     printf("Test sprintf: %s\n", buf);
     KEApiLibUnInitialize();
     
@@ -195,6 +220,11 @@ int AJ_Main(void)
             	printf("Case B_S_COUNT\n");
             	status = AppHandleCount(&msg);
             	break;
+            
+            case BASIC_SERVICE_SENSORVALUE:
+            	printf("Case B_S_VALUE\n");
+            	status = AppHandleValue(&msg);
+            	break;	
             	
             case AJ_SIGNAL_SESSION_LOST_WITH_REASON:
                 {

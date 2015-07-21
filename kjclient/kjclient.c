@@ -46,8 +46,8 @@ static const char* const sampleInterface[] = {
     "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
     "?boardName outStr>s", /* Method at index 0. */
     "?countSensor outStr>s",
-    "?sensorValue in<i out>s",
-    "?sensorInfo in<i out>s",
+    "?sensorValue inStr<i outStr>s",
+    "?sensorInfo inStr<i outStr>s",
     NULL
 };
 
@@ -116,6 +116,23 @@ void MakeMethodCall1(AJ_BusAttachment* bus, uint32_t sessionId)
     AJ_InfoPrintf(("MakeMethodCall1() resulted in a status of 0x%04x.\n", status));
 }
 
+void MakeMethodCall2(AJ_BusAttachment* bus, uint32_t sessionId)
+{
+    AJ_Status status;
+    AJ_Message msg;
+
+    status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_SENSORVALUE, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
+
+    if (status == AJ_OK) {
+        status = AJ_MarshalArgs(&msg, "i", 2);
+    }
+
+    if (status == AJ_OK) {
+        status = AJ_DeliverMsg(&msg);
+    }
+
+    AJ_InfoPrintf(("MakeMethodCall2() resulted in a status of 0x%04x.\n", status));
+}
 int AJ_Main(void)
 {
     AJ_Status status = AJ_OK;
@@ -130,10 +147,16 @@ int AJ_Main(void)
     AJ_Initialize();
     AJ_PrintXML(AppObjects);
     AJ_RegisterObjects(NULL, AppObjects);
-
+    
+    int flag = 1;
+    int flag_val = 0;
+    int flag_val_iter = 1;
+    int count;
+    //int iter;
+   
     while (!done) {
+    	printf("WHILE\n");
         AJ_Message msg;
-
         if (!connected) {
             status = AJ_StartClientByName(&bus,
                                           NULL,
@@ -148,15 +171,28 @@ int AJ_Main(void)
             if (status == AJ_OK) {
                 AJ_InfoPrintf(("StartClient returned %d, sessionId=%u.\n", status, sessionId));
                 connected = TRUE;
-
-                MakeMethodCall1(&bus, sessionId);
-                printf("MMC done\n");
+		if (flag) {
+                	MakeMethodCall(&bus, sessionId);
+                	printf("MMC done\n");
+                }
             } else {
                 AJ_InfoPrintf(("StartClient returned 0x%04x.\n", status));
                 break;
             }
         }
-
+	if (!flag) {
+		printf("In if\n");
+		MakeMethodCall1(&bus, sessionId);
+		printf("MMC1 done\n");
+		flag++;
+	}
+	
+	if (flag_val) {
+		printf("In if Val\n");
+		MakeMethodCall2(&bus, sessionId);
+		++flag_val_iter;
+		printf("MMC2 done\n");
+	}
         status = AJ_UnmarshalMsg(&bus, &msg, UNMARSHAL_TIMEOUT);
 
         if (AJ_ERR_TIMEOUT == status) {
@@ -174,7 +210,9 @@ int AJ_Main(void)
                     if (AJ_OK == status) {
                         AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s'.\n", fullServiceName, "boardName",
                                          ServicePath, arg.val.v_string));
-                        done = TRUE;
+                        --flag;
+                        printf("flag after --: %d\n", flag);
+                        //done = TRUE;
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
@@ -190,9 +228,11 @@ int AJ_Main(void)
                     status = AJ_UnmarshalArg(&msg, &arg);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s'.\n", fullServiceName, "boardName",
+                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s'.\n", fullServiceName, "countSensor",
                                          ServicePath, arg.val.v_string));
-                        done = TRUE;
+                        count = atoi(arg.val.v_string);
+                        //done = TRUE;
+                        flag_val++;
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
@@ -200,6 +240,28 @@ int AJ_Main(void)
                     }
                 }
                 break;
+            
+            case AJ_REPLY_ID(BASIC_CLIENT_SENSORVALUE):
+                {
+                    AJ_Arg arg;
+		    printf("In AJ_REPLY_ID\n");
+                    status = AJ_UnmarshalArg(&msg, &arg);
+
+                    if (AJ_OK == status) {
+                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned: \n'%s'.\n", fullServiceName, "valueSensor",
+                                         ServicePath, arg.val.v_string));
+                        if (flag_val_iter == count) {
+                        	done = TRUE;
+                        }
+                        
+                    } else {
+                        AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
+                        /* Try again because of the failure. */
+                        MakeMethodCall1(&bus, sessionId);
+                    }
+                }
+                break;
+                
             case AJ_SIGNAL_SESSION_LOST_WITH_REASON:
                 /* A session was lost so return error to force a disconnect. */
                 {
@@ -218,7 +280,9 @@ int AJ_Main(void)
         }
 
         /* Messages MUST be discarded to free resources. */
+        
         AJ_CloseMsg(&msg);
+      
 
         if (status == AJ_ERR_SESSION_LOST) {
             AJ_AlwaysPrintf(("AllJoyn disconnect.\n"));
