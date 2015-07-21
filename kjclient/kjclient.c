@@ -116,7 +116,7 @@ void MakeMethodCall1(AJ_BusAttachment* bus, uint32_t sessionId)
     AJ_InfoPrintf(("MakeMethodCall1() resulted in a status of 0x%04x.\n", status));
 }
 
-void MakeMethodCall2(AJ_BusAttachment* bus, uint32_t sessionId)
+void MakeMethodCall2(AJ_BusAttachment* bus, uint32_t sessionId, int numSen)
 {
     AJ_Status status;
     AJ_Message msg;
@@ -124,7 +124,7 @@ void MakeMethodCall2(AJ_BusAttachment* bus, uint32_t sessionId)
     status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_SENSORVALUE, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
 
     if (status == AJ_OK) {
-        status = AJ_MarshalArgs(&msg, "i", 2);
+        status = AJ_MarshalArgs(&msg, "i", numSen);
     }
 
     if (status == AJ_OK) {
@@ -150,7 +150,7 @@ int AJ_Main(void)
     
     int flag = 1;
     int flag_val = 0;
-    int flag_val_iter = 1;
+    int flag_val_iter = 0;
     int count;
     //int iter;
    
@@ -189,7 +189,7 @@ int AJ_Main(void)
 	
 	if (flag_val) {
 		printf("In if Val\n");
-		MakeMethodCall2(&bus, sessionId);
+		MakeMethodCall2(&bus, sessionId, flag_val_iter);
 		++flag_val_iter;
 		printf("MMC2 done\n");
 	}
