@@ -23,9 +23,11 @@
 #include <stdlib.h>
 #include <aj_debug.h>
 #include <alljoyn.h>
+#include <keapi/keapi.h>
+#include <time.h>
 
-static const char ServiceName[] = "org.alljoyn.Bus.sample";
-static const char ServicePath[] = "/sample";
+static const char ServiceName[] = "ru.rtsoft.dev.kjoin";
+static const char ServicePath[] = "/keapi";
 static const uint16_t ServicePort = 25;
 
 /*
@@ -41,10 +43,8 @@ uint8_t dbgBASIC_CLIENT = 0;
  * See also .\inc\aj_introspect.h
  */
 static const char* const sampleInterface[] = {
-    "org.alljoyn.Bus.sample",   /* The first entry is the interface name. */
-    "?Dummy foo<i",             /* This is just a dummy entry at index 0 for illustration purposes. */
-    "?Dummy2 fee<i",            /* This is just a dummy entry at index 1 for illustration purposes. */
-    "?cat inStr1<s inStr2<s outStr>s", /* Method at index 2. */
+    "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
+    "?boardName Name>s Date>i SCount>i SName>s STemp>i SStatus>i SName>s STemp>i SStatus>i SName>s STemp>i SStatus>i", /* Method at index 2. */
     NULL
 };
 
@@ -76,7 +76,7 @@ static const AJ_Object AppObjects[] = {
  *
  * See also .\inc\aj_introspect.h
  */
-#define BASIC_CLIENT_CAT AJ_PRX_MESSAGE_ID(0, 0, 2)
+#define BASIC_CLIENT_CAT AJ_PRX_MESSAGE_ID(0, 0, 0)
 
 #define CONNECT_TIMEOUT    (1000 * 60)
 #define UNMARSHAL_TIMEOUT  (1000 * 5)
@@ -88,10 +88,6 @@ void MakeMethodCall(AJ_BusAttachment* bus, uint32_t sessionId)
     AJ_Message msg;
 
     status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_CAT, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
-
-    if (status == AJ_OK) {
-        status = AJ_MarshalArgs(&msg, "ss", "Hello ", "World!");
-    }
 
     if (status == AJ_OK) {
         status = AJ_DeliverMsg(&msg);
@@ -151,12 +147,46 @@ int AJ_Main(void)
             case AJ_REPLY_ID(BASIC_CLIENT_CAT):
                 {
                     AJ_Arg arg;
+                    KEAPI_BOARD_INFO BoardInfo;
+					KEAPI_SENSOR_VALUE SVal[20];
+					KEAPI_SENSOR_INFO SInfo[20];
+					int SenCount;
+					char *Name;
+					const int Mtime;
+					int test[3],i;
 
-                    status = AJ_UnmarshalArg(&msg, &arg);
+					//test[1]=1; test[2]=2; test[3]=3;
+
+                    status = AJ_UnmarshalArgs(&msg, "s", &Name);
+                    status = AJ_UnmarshalArgs(&msg, "i", &Mtime);
+                    status = AJ_UnmarshalArgs(&msg, "i", &SenCount);
+
+                    for (i=0;i<SenCount;i++){
+				    	AJ_UnmarshalArgs(&msg, "s", &SInfo[i].name);
+				    	AJ_UnmarshalArgs(&msg, "i", &SVal[i].value);
+				    	AJ_UnmarshalArgs(&msg, "i", &SVal[i].status);
+					}
+
+                    //status = AJ_UnmarshalArgs(&msg, "s", &Name);
+                    //status = AJ_UnmarshalArg(&msg, &arg);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s'.\n", fullServiceName, "cat",
-                                         ServicePath, arg.val.v_string));
+                        //AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s',%s.\n", fullServiceName, "boardName",
+                                         //ServicePath, Name, ctime(&Mtime)));
+						
+						printf("\n");
+						printf("Название платы: %s\n", Name);
+						printf("Дата производства: %s", ctime(&Mtime));
+						printf("Колличество сенсоров: %d\n\n", SenCount);
+
+						for (i=0;i<SenCount;i++){
+							printf("Сенсор №%d:\n",i+1);
+							printf("    Имя - %s\n",SInfo[i].name);
+							printf("    Температура - %dºС\n",SVal[i].value/1000);
+							printf("    Статус - %d\n",SVal[i].status);
+							printf("\n");
+						}
+
                         done = TRUE;
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
