@@ -23,6 +23,7 @@
 #include <alljoyn.h>
 #include <keapi/keapi.h>
 #include <time.h>
+#include <stdlib.h>
 
 #define CONNECT_ATTEMPTS   10
 static const char ServiceName[] = "ru.rtsoft.dev.kjoin";
@@ -37,7 +38,10 @@ uint8_t dbgBASIC_SERVICE = 0;
  */
 static const char* const sampleInterface[] = {
     "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
-    "?boardName outStr>s", /* Method at index 1. */
+    "?boardName outStr>s", /* Method at index 0. */
+    "?countSensor outStr>s",
+    "?sensorValue in<i out>s",
+    "?sensorInfo in<i out>s",
     NULL
 };
 
@@ -71,6 +75,9 @@ static const AJ_Object AppObjects[] = {
  * See also .\inc\aj_introspect.h
  */
 #define BASIC_SERVICE_BOARDINFO AJ_APP_MESSAGE_ID(0, 0, 0)
+#define BASIC_SERVICE_COUNTSENSOR AJ_APP_MESSAGE_ID(0, 0, 1)
+#define BASIC_SERVICE_SENSORVALUE AJ_APP_MESSAGE_ID(0, 0, 2)
+#define BASIC_SERVICE_SENSORINFO AJ_APP_MESSAGE_ID(0, 0, 3)
 
 static AJ_Status AppHandleInfo(AJ_Message* msg)
 {
@@ -88,7 +95,7 @@ static AJ_Status AppHandleInfo(AJ_Message* msg)
     strncpy(buffer, BoardInfo.boardName, BUFFER_SIZE);
     buffer[BUFFER_SIZE - 1] = '\0';
     KEApiLibUnInitialize();
-    
+    printf("Test Message\n");
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buffer, 0);
     AJ_MarshalArg(&reply, &replyArg);
     return AJ_DeliverMsg(&reply);
@@ -96,6 +103,30 @@ static AJ_Status AppHandleInfo(AJ_Message* msg)
 #undef BUFFER_SIZE
 }
 
+static AJ_Status AppHandleCount(AJ_Message* msg)
+{
+#define BUFFER_SIZE 20
+    printf("Enter AHC\n");
+    char buf[BUFFER_SIZE];
+    KEApiLibInitialize();
+    int32_t TempSensorCount;
+    AJ_Message reply;
+    AJ_Arg replyArg;
+    
+    printf("Before Reply\n");
+    AJ_MarshalReplyMsg(msg, &reply);
+    printf("After Reply\n");
+    KEApiGetTempSensorCount(&TempSensorCount);
+    sprintf(buf, "%d", TempSensorCount);
+    printf("Test sprintf: %s\n", buf);
+    KEApiLibUnInitialize();
+    
+    AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
+    AJ_MarshalArg(&reply, &replyArg);
+    return AJ_DeliverMsg(&reply);
+    
+#undef BUFFER_SIZE
+}
 /* All times are expressed in milliseconds. */
 #define CONNECT_TIMEOUT     (1000 * 60)
 #define UNMARSHAL_TIMEOUT   (1000 * 5)
@@ -156,9 +187,15 @@ int AJ_Main(void)
                 break;
 
             case BASIC_SERVICE_BOARDINFO:
+            	printf("Case B_S_INFO\n");
                 status = AppHandleInfo(&msg);
                 break;
 
+            case BASIC_SERVICE_COUNTSENSOR:
+            	printf("Case B_S_COUNT\n");
+            	status = AppHandleCount(&msg);
+            	break;
+            	
             case AJ_SIGNAL_SESSION_LOST_WITH_REASON:
                 {
                     uint32_t id, reason;
