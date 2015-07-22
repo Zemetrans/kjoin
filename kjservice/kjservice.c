@@ -95,7 +95,6 @@ static AJ_Status AppHandleInfo(AJ_Message* msg)
     strncpy(buffer, BoardInfo.boardName, BUFFER_SIZE);
     buffer[BUFFER_SIZE - 1] = '\0';
     KEApiLibUnInitialize();
-    printf("Test Message\n");
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buffer, 0);
     AJ_MarshalArg(&reply, &replyArg);
     return AJ_DeliverMsg(&reply);
@@ -106,7 +105,6 @@ static AJ_Status AppHandleInfo(AJ_Message* msg)
 static AJ_Status AppHandleCount(AJ_Message* msg)
 {
 #define BUFFER_SIZE 20
-    printf("Enter AHC\n");
     char buf[BUFFER_SIZE];
     KEApiLibInitialize();
     int32_t TempSensorCount;
@@ -117,7 +115,6 @@ static AJ_Status AppHandleCount(AJ_Message* msg)
     
     KEApiGetTempSensorCount(&TempSensorCount);
     sprintf(buf, "%d", TempSensorCount);
-    printf("Test sprintf: %s\n", buf);
     KEApiLibUnInitialize();
     
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
@@ -131,7 +128,6 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
 {
 #define BUFFER_SIZE 256
     int num;
-    printf("Enter AHV\n");
     char buf[BUFFER_SIZE];
     KEApiLibInitialize();
     KEAPI_SENSOR_VALUE SensorValue;
@@ -142,8 +138,7 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorValue(num, &SensorValue);
-    sprintf(buf,"Sensor %d, temp = %d,  status: %d\n", num, SensorValue.value, SensorValue.status);
-    printf("Test sprintf: %s\n", buf);
+    sprintf(buf,"Sensor: %d, temp = %d,  status: %d\n", num, SensorValue.value, SensorValue.status);
     KEApiLibUnInitialize();
     
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
@@ -156,7 +151,6 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
 {
 #define BUFFER_SIZE 256
     int num;
-    printf("Enter AHI\n");
     char buf[BUFFER_SIZE];
     KEApiLibInitialize();
     KEAPI_SENSOR_INFO SensorInfo;
@@ -167,10 +161,9 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorInfo(num, &SensorInfo);
-    sprintf(buf,"Sensor %d, type: %d, min temp = %d, max temp = %d, alarmHi = %d,\n hystHi = %d, alarmLo = %d, hystLo = %d\n",
-   		num, SensorInfo.type, SensorInfo.min, SensorInfo.max, SensorInfo.alarmHi, 
+    sprintf(buf,"Type: %d, min temp = %d, max temp = %d, alarmHi = %d,\nhystHi = %d, alarmLo = %d, hystLo = %d\n",
+   		SensorInfo.type, SensorInfo.min, SensorInfo.max, SensorInfo.alarmHi, 
    		SensorInfo.hystHi, SensorInfo.alarmLo, SensorInfo.hystLo);
-    printf("Test sprintf: %s\n", buf);
     KEApiLibUnInitialize();
     
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
@@ -239,22 +232,18 @@ int AJ_Main(void)
                 break;
 
             case BASIC_SERVICE_BOARDINFO:
-            	printf("Case B_S_INFO\n");
                 status = AppHandleInfo(&msg);
                 break;
 
             case BASIC_SERVICE_COUNTSENSOR:
-            	printf("Case B_S_COUNT\n");
             	status = AppHandleCount(&msg);
             	break;
             
             case BASIC_SERVICE_SENSORVALUE:
-            	printf("Case B_S_VALUE\n");
             	status = AppHandleValue(&msg);
             	break;
             	
             case BASIC_SERVICE_SENSORINFO:
-            	printf("Case B_S_SINFO\n");
             	status = AppHandleSensorInfo(&msg);
             	break;
             	

@@ -170,12 +170,9 @@ int AJ_Main(void)
     int flag_val = 0;
     int flag_info = 0;
     int flag_val_iter = 0;
-    //int flag_val_info = 0;
     int count = -1;
-    //int iter;
-   
+
     while (!done) {
-    	printf("WHILE\n");
         AJ_Message msg;
         if (!connected) {
             status = AJ_StartClientByName(&bus,
@@ -193,7 +190,6 @@ int AJ_Main(void)
                 connected = TRUE;
 		if (flag) {
                 	MakeMethodCall(&bus, sessionId);
-                	printf("MMC done\n");
                 }
             } else {
                 AJ_InfoPrintf(("StartClient returned 0x%04x.\n", status));
@@ -206,26 +202,17 @@ int AJ_Main(void)
 	}
 	
 	if (!flag) {
-		printf("In if\n");
 		MakeMethodCall1(&bus, sessionId);
-		//printf("MMC1 done\n");
 		flag++;
 	}
 	
 	if ((flag_val) && (!flag_info)) {
-		printf("In if Val\n");
 		MakeMethodCall2(&bus, sessionId, flag_val_iter);
-		//MakeMethodCall3(&bus, sessionId, flag_val_iter);
-		//++flag_val_iter;
-		printf("Flag_val_iter temp: %d\n", flag_val_iter);
-		//printf("MMC2 done\n");
-		//flag_info++;
 	}
 	
 	if (flag_info) {
 		MakeMethodCall3(&bus, sessionId, flag_val_iter);
 		flag_info--;
-		printf("Flag_val_iter: %d\n", flag_val_iter);
 		++flag_val_iter;
 	}
 	
@@ -244,11 +231,9 @@ int AJ_Main(void)
                     status = AJ_UnmarshalArg(&msg, &arg);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s'.\n", fullServiceName, "boardName",
-                                         ServicePath, arg.val.v_string));
+                        AJ_AlwaysPrintf(("Board Info: %s\n", arg.val.v_string));
                         --flag;
-                        printf("flag after --: %d\n", flag);
-                        //done = TRUE;
+                                      
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
@@ -260,15 +245,11 @@ int AJ_Main(void)
             case AJ_REPLY_ID(BASIC_CLIENT_COUNTSENSOR):
                 {
                     AJ_Arg arg;
-		    printf("In AJ_REPLY_ID\n");
                     status = AJ_UnmarshalArg(&msg, &arg);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s'.\n", fullServiceName, "countSensor",
-                                         ServicePath, arg.val.v_string));
+                        AJ_AlwaysPrintf(("Total Sensors: %s\n",arg.val.v_string));
                         count = atoi(arg.val.v_string);
-                        printf("count: %d\n", count);
-                        //done = TRUE;
                         flag_val++;
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
@@ -281,15 +262,10 @@ int AJ_Main(void)
             case AJ_REPLY_ID(BASIC_CLIENT_SENSORVALUE):
                 {
                     AJ_Arg arg;
-		    printf("In AJ_REPLY_ID\n");
                     status = AJ_UnmarshalArg(&msg, &arg);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned: \n'%s'.\n", fullServiceName, "sensorValue",
-                                         ServicePath, arg.val.v_string));
-                        //if (flag_val_iter == count) {
-                        	//done = TRUE;
-                        //}
+                        AJ_AlwaysPrintf(("%s", arg.val.v_string));
                         flag_info++;
                         
                     } else {
@@ -302,17 +278,11 @@ int AJ_Main(void)
             case AJ_REPLY_ID(BASIC_CLIENT_SENSORINFO):
                 {
                     AJ_Arg arg;
-		    printf("In AJ_REPLY_ID\n");
                     status = AJ_UnmarshalArg(&msg, &arg);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned: \n'%s'.\n", fullServiceName, "sensorInfo",
-                                         ServicePath, arg.val.v_string));
-                        //if (flag_val_iter == count) {
-                        	//printf("Flag_val_iter: %d\n", flag_val_iter);
-                        	//done = TRUE;
-                        //}
-                        
+                        AJ_AlwaysPrintf(("%s\n", arg.val.v_string));
+                                         
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
