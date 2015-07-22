@@ -106,16 +106,11 @@ static AJ_Status AppHandleCat(AJ_Message* msg)
     buffer[BUFFER_SIZE - 1] = '\0';
 
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buffer, 0);
-    AJ_MarshalArgs(&reply, "s", BoardInfo.boardName);
-    AJ_MarshalArgs(&reply, "i", (int)BoardInfo.manufacturingDate);
-    AJ_MarshalArgs(&reply, "i", SenCount);
+    AJ_MarshalArgs(&reply, "sii", BoardInfo.boardName, (int)BoardInfo.manufacturingDate, SenCount);
 
-    for (i=0;i<SenCount;i++){
-    	printf("%s\n", SInfo[i].name);
-    	AJ_MarshalArgs(&reply, "s", SInfo[i].name);
-    	AJ_MarshalArgs(&reply, "i", SVal[i].value);
-    	AJ_MarshalArgs(&reply, "i", SVal[i].status);
-	}
+    for (i=0;i<SenCount;i++)
+    	AJ_MarshalArgs(&reply, "sii", SInfo[i].name, SVal[i].value, SVal[i].status);
+	
     //AJ_MarshalArgs(&reply, "s", "buffer");
     //AJ_MarshalArg(&reply, &replyArg);
 

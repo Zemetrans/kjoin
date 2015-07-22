@@ -96,6 +96,15 @@ void MakeMethodCall(AJ_BusAttachment* bus, uint32_t sessionId)
     AJ_InfoPrintf(("MakeMethodCall() resulted in a status of 0x%04x.\n", status));
 }
 
+char *StatusDecode(int code)
+{
+	if      (code == 1) return "KEAPI_SENSOR_STATUS_ACTIVE"; 
+	else if (code == 2) return "KEAPI_SENSOR_STATUS_ALARM"; 
+	else if (code == 3) return "KEAPI_SENSOR_STATUS_BROKEN"; 
+	else if (code == 4) return "KEAPI_SENSOR_STATUS_SHORTCIRCUIT"; 
+	return "error";
+}
+
 int AJ_Main(void)
 {
     AJ_Status status = AJ_OK;
@@ -146,44 +155,30 @@ int AJ_Main(void)
             switch (msg.msgId) {
             case AJ_REPLY_ID(BASIC_CLIENT_CAT):
                 {
-                    AJ_Arg arg;
                     KEAPI_BOARD_INFO BoardInfo;
 					KEAPI_SENSOR_VALUE SVal[20];
-					KEAPI_SENSOR_INFO SInfo[20];
 					int SenCount;
 					char *Name;
 					const int Mtime;
-					int test[3],i;
+					int i;
+					char *BName[20];
 
-					//test[1]=1; test[2]=2; test[3]=3;
+                    status = AJ_UnmarshalArgs(&msg, "sii", &Name, &Mtime, &SenCount);
 
-                    status = AJ_UnmarshalArgs(&msg, "s", &Name);
-                    status = AJ_UnmarshalArgs(&msg, "i", &Mtime);
-                    status = AJ_UnmarshalArgs(&msg, "i", &SenCount);
+                    for (i=0;i<SenCount;i++)
+				    	AJ_UnmarshalArgs(&msg, "sii", &BName[i], &SVal[i].value, &SVal[i].status);
 
-                    for (i=0;i<SenCount;i++){
-				    	AJ_UnmarshalArgs(&msg, "s", &SInfo[i].name);
-				    	AJ_UnmarshalArgs(&msg, "i", &SVal[i].value);
-				    	AJ_UnmarshalArgs(&msg, "i", &SVal[i].status);
-					}
-
-                    //status = AJ_UnmarshalArgs(&msg, "s", &Name);
-                    //status = AJ_UnmarshalArg(&msg, &arg);
-
-                    if (AJ_OK == status) {
-                        //AJ_AlwaysPrintf(("'%s.%s' (path='%s') returned '%s',%s.\n", fullServiceName, "boardName",
-                                         //ServicePath, Name, ctime(&Mtime)));
-						
-						printf("\n");
+                    if (AJ_OK == status) {						
+						system("clear");
 						printf("Название платы: %s\n", Name);
 						printf("Дата производства: %s", ctime(&Mtime));
 						printf("Колличество сенсоров: %d\n\n", SenCount);
 
 						for (i=0;i<SenCount;i++){
 							printf("Сенсор №%d:\n",i+1);
-							printf("    Имя - %s\n",SInfo[i].name);
+							printf("    Имя - %s\n",BName[i]);
 							printf("    Температура - %dºС\n",SVal[i].value/1000);
-							printf("    Статус - %d\n",SVal[i].status);
+							printf("    Статус - %s\n",StatusDecode(SVal[i].status));
 							printf("\n");
 						}
 
