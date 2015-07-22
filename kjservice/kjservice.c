@@ -24,6 +24,7 @@
 #include <keapi/keapi.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define CONNECT_ATTEMPTS   10
 static const char ServiceName[] = "ru.rtsoft.dev.kjoin";
@@ -129,6 +130,7 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
 #define BUFFER_SIZE 256
     int num;
     char buf[BUFFER_SIZE];
+    char status[BUFFER_SIZE];
     KEApiLibInitialize();
     KEAPI_SENSOR_VALUE SensorValue;
     AJ_Message reply;
@@ -138,7 +140,12 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorValue(num, &SensorValue);
-    sprintf(buf,"Sensor: %d, temp = %d,  status: %d\n", num, SensorValue.value, SensorValue.status);
+    SensorValue.status == KEAPI_SENSOR_STATUS_ACTIVE ? strncpy(status,"Active\n", 7) :
+    SensorValue.status == KEAPI_SENSOR_STATUS_ALARM ? strncpy(status, "Alarm\n", 6) :
+    SensorValue.status == KEAPI_SENSOR_STATUS_BROKEN ? strncpy(status, "Broken\n", 7) :
+    						       strncpy(status, "Short Circuit\n", 14);
+    sprintf(buf,"Sensor: %d, temp = %d status = ", num, SensorValue.value/1000);
+    strncat(buf, status, sizeof(status));
     KEApiLibUnInitialize();
     
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
@@ -152,6 +159,7 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
 #define BUFFER_SIZE 256
     int num;
     char buf[BUFFER_SIZE];
+    char type[BUFFER_SIZE];
     KEApiLibInitialize();
     KEAPI_SENSOR_INFO SensorInfo;
     AJ_Message reply;
@@ -161,12 +169,20 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorInfo(num, &SensorInfo);
-    sprintf(buf,"Type: %d, min temp = %d, max temp = %d, alarmHi = %d,\nhystHi = %d, alarmLo = %d, hystLo = %d\n",
-   		SensorInfo.type, SensorInfo.min, SensorInfo.max, SensorInfo.alarmHi, 
-   		SensorInfo.hystHi, SensorInfo.alarmLo, SensorInfo.hystLo);
+    SensorInfo.type == KEAPI_TEMP_CPU ? strcpy(type, "Type: CPU") :
+    SensorInfo.type == KEAPI_TEMP_BOX ? strcpy(type, "Type: Box") :
+    SensorInfo.type == KEAPI_TEMP_ENV ? strcpy(type, "Type: Env") :
+    SensorInfo.type == KEAPI_TEMP_BOARD ? strcpy(type, "Type: Board") :
+    SensorInfo.type == KEAPI_TEMP_BACKPLANE ? strcpy(type, "Type: Backplane") :
+    SensorInfo.type == KEAPI_TEMP_CHIPSET ? strcpy(type, "Type: Chipset") :
+    SensorInfo.type == KEAPI_TEMP_VIDEO ? strcpy(type, "Type: Video") : strcpy(type, "Type: Other");
+    sprintf(buf,", min temp = %d, max temp = %d, alarmHi = %d,\nhystHi = %d, alarmLo = %d, hystLo = %d\n",
+   		SensorInfo.min/1000, SensorInfo.max/1000, SensorInfo.alarmHi/1000, 
+   		SensorInfo.hystHi/1000, SensorInfo.alarmLo/1000, SensorInfo.hystLo/1000);
+    strncat(type, buf, sizeof(buf));
     KEApiLibUnInitialize();
     
-    AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
+    AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, type, 0);
     AJ_MarshalArg(&reply, &replyArg);
     return AJ_DeliverMsg(&reply);
     
