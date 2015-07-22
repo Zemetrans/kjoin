@@ -152,6 +152,33 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
     
 #undef BUFFER_SIZE
 }
+static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
+{
+#define BUFFER_SIZE 256
+    int num;
+    printf("Enter AHI\n");
+    char buf[BUFFER_SIZE];
+    KEApiLibInitialize();
+    KEAPI_SENSOR_INFO SensorInfo;
+    AJ_Message reply;
+    AJ_Arg replyArg;
+    
+    AJ_UnmarshalArgs(msg, "i", &num);
+    AJ_MarshalReplyMsg(msg, &reply);
+    
+    KEApiGetTempSensorInfo(num, &SensorInfo);
+    sprintf(buf,"Sensor %d, type: %d, min temp = %d, max temp = %d, alarmHi = %d,\n hystHi = %d, alarmLo = %d, hystLo = %d\n",
+   		num, SensorInfo.type, SensorInfo.min, SensorInfo.max, SensorInfo.alarmHi, 
+   		SensorInfo.hystHi, SensorInfo.alarmLo, SensorInfo.hystLo);
+    printf("Test sprintf: %s\n", buf);
+    KEApiLibUnInitialize();
+    
+    AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
+    AJ_MarshalArg(&reply, &replyArg);
+    return AJ_DeliverMsg(&reply);
+    
+#undef BUFFER_SIZE
+}
 /* All times are expressed in milliseconds. */
 #define CONNECT_TIMEOUT     (1000 * 60)
 #define UNMARSHAL_TIMEOUT   (1000 * 5)
@@ -224,7 +251,12 @@ int AJ_Main(void)
             case BASIC_SERVICE_SENSORVALUE:
             	printf("Case B_S_VALUE\n");
             	status = AppHandleValue(&msg);
-            	break;	
+            	break;
+            	
+            case BASIC_SERVICE_SENSORINFO:
+            	printf("Case B_S_SINFO\n");
+            	status = AppHandleSensorInfo(&msg);
+            	break;
             	
             case AJ_SIGNAL_SESSION_LOST_WITH_REASON:
                 {
