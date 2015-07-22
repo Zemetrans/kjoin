@@ -144,7 +144,7 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
     SensorValue.status == KEAPI_SENSOR_STATUS_ALARM ? strncpy(status, "Alarm\n", 6) :
     SensorValue.status == KEAPI_SENSOR_STATUS_BROKEN ? strncpy(status, "Broken\n", 7) :
     						       strncpy(status, "Short Circuit\n", 14);
-    sprintf(buf,"Sensor: %d, temp = %d status = ", num, SensorValue.value/1000);
+    sprintf(buf,"Sensor: %d, temp = %d˚C, status: ", num, SensorValue.value/1000);
     strncat(buf, status, sizeof(status));
     KEApiLibUnInitialize();
     
@@ -169,14 +169,14 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorInfo(num, &SensorInfo);
-    SensorInfo.type == KEAPI_TEMP_CPU ? strcpy(type, "Type: CPU") :
-    SensorInfo.type == KEAPI_TEMP_BOX ? strcpy(type, "Type: Box") :
-    SensorInfo.type == KEAPI_TEMP_ENV ? strcpy(type, "Type: Env") :
-    SensorInfo.type == KEAPI_TEMP_BOARD ? strcpy(type, "Type: Board") :
-    SensorInfo.type == KEAPI_TEMP_BACKPLANE ? strcpy(type, "Type: Backplane") :
-    SensorInfo.type == KEAPI_TEMP_CHIPSET ? strcpy(type, "Type: Chipset") :
-    SensorInfo.type == KEAPI_TEMP_VIDEO ? strcpy(type, "Type: Video") : strcpy(type, "Type: Other");
-    sprintf(buf,", min temp = %d, max temp = %d, alarmHi = %d,\nhystHi = %d, alarmLo = %d, hystLo = %d\n",
+    SensorInfo.type == KEAPI_TEMP_CPU ? strcpy(type, "Type: CPU\n") :
+    SensorInfo.type == KEAPI_TEMP_BOX ? strcpy(type, "Type: Box\n") :
+    SensorInfo.type == KEAPI_TEMP_ENV ? strcpy(type, "Type: Env\n") :
+    SensorInfo.type == KEAPI_TEMP_BOARD ? strcpy(type, "Type: Board\n") :
+    SensorInfo.type == KEAPI_TEMP_BACKPLANE ? strcpy(type, "Type: Backplane\n") :
+    SensorInfo.type == KEAPI_TEMP_CHIPSET ? strcpy(type, "Type: Chipset\n") :
+    SensorInfo.type == KEAPI_TEMP_VIDEO ? strcpy(type, "Type: Video\n") : strcpy(type, "Type: Other\n");
+    sprintf(buf,"\t(min temp = %d˚C, max temp = %d˚C)\n\t(alarmHi  = %d˚C,  hystHi  = %d˚C)\n\t(alarmLo  = %d˚C,  hystLo  = %d˚C)\n",
    		SensorInfo.min/1000, SensorInfo.max/1000, SensorInfo.alarmHi/1000, 
    		SensorInfo.hystHi/1000, SensorInfo.alarmLo/1000, SensorInfo.hystLo/1000);
     strncat(type, buf, sizeof(buf));
