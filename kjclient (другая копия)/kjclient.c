@@ -104,7 +104,6 @@ void MakeMethodCall1(AJ_BusAttachment* bus, uint32_t sessionId, int id)
     AJ_Message msg;
 
     status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_SENSOR_INFO, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
-    printf("KEK\n");
     
     if (status == AJ_OK) {
         status = AJ_MarshalArgs(&msg, "i", id);
