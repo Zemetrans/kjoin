@@ -44,7 +44,8 @@ uint8_t dbgBASIC_CLIENT = 0;
  */
 static const char* const sampleInterface[] = {
     "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
-    "?boardName Name>s Date>i SCount>i SName>s SType>i STemp>i SStatus>i SName>s SType>i STemp>i SStatus>i SName>s SType>i STemp>i SStatus>i", /* Method at index 1. */
+    "?boardName Name>s Date>i SCount>i", /* Method at index 1. */
+    "?sensorStatus id<i idBack>i SName>s SType>i STemp>i SStatus>i",
     NULL
 };
 
@@ -77,6 +78,7 @@ static const AJ_Object AppObjects[] = {
  * See also .\inc\aj_introspect.h
  */
 #define BASIC_CLIENT_CAT AJ_PRX_MESSAGE_ID(0, 0, 0)
+#define BASIC_CLIENT_SENSOR_INFO AJ_APP_MESSAGE_ID(0, 0, 1)
 
 #define CONNECT_TIMEOUT    (1000 * 60)
 #define UNMARSHAL_TIMEOUT  (1000 * 5)
@@ -88,6 +90,25 @@ void MakeMethodCall(AJ_BusAttachment* bus, uint32_t sessionId)
     AJ_Message msg;
 
     status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_CAT, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
+
+    if (status == AJ_OK) {
+        status = AJ_DeliverMsg(&msg);
+    }
+
+    AJ_InfoPrintf(("MakeMethodCall() resulted in a status of 0x%04x.\n", status));
+}
+
+void MakeMethodCall1(AJ_BusAttachment* bus, uint32_t sessionId, int id)
+{
+    AJ_Status status;
+    AJ_Message msg;
+
+    status = AJ_MarshalMethodCall(bus, &msg, BASIC_CLIENT_SENSOR_INFO, fullServiceName, sessionId, 0, METHOD_TIMEOUT);
+    printf("KEK\n");
+    
+    if (status == AJ_OK) {
+        status = AJ_MarshalArgs(&msg, "i", id);
+    }
 
     if (status == AJ_OK) {
         status = AJ_DeliverMsg(&msg);
@@ -125,6 +146,11 @@ int AJ_Main(void)
     uint8_t connected = FALSE;
     uint8_t done = FALSE;
     uint32_t sessionId = 0;
+    int SenCount,id;
+    KEAPI_BOARD_INFO BoardInfo;
+	KEAPI_SENSOR_VALUE SVal[20];
+	int i,SType[20];
+	char *BName[20];
 
     /*
      * One time initialization before calling any other AllJoyn APIs
@@ -152,6 +178,7 @@ int AJ_Main(void)
                 connected = TRUE;
 
                 MakeMethodCall(&bus, sessionId);
+                printf("%d\n", SenCount);
             } else {
                 AJ_InfoPrintf(("StartClient returned 0x%04x.\n", status));
                 break;
@@ -168,17 +195,10 @@ int AJ_Main(void)
             switch (msg.msgId) {
             case AJ_REPLY_ID(BASIC_CLIENT_CAT):
                 {
-                    KEAPI_BOARD_INFO BoardInfo;
-					KEAPI_SENSOR_VALUE SVal[20];
-					int SenCount,i,SType[20];
-					char *BName[20];
 					char *Name;
 					const int Mtime;
 
                     status = AJ_UnmarshalArgs(&msg, "sii", &Name, &Mtime, &SenCount);
-
-                    for (i=0;i<SenCount;i++)
-				    	AJ_UnmarshalArgs(&msg, "siii", &BName[i], &SType[i], &SVal[i].value, &SVal[i].status);
 
                     if (AJ_OK == status) {						
 						system("clear");
@@ -186,14 +206,32 @@ int AJ_Main(void)
 						printf("Дата производства: %s", ctime(&Mtime));
 						printf("Колличество сенсоров: %d\n\n", SenCount);
 
-						for (i=0;i<SenCount;i++){
-							printf("Сенсор №%d:\n",i+1);
-							printf("    Имя         - %s\n",BName[i]);
-							printf("    Тип         - %s\n",TypeDecode(SType[i]));
-							printf("    Температура - %dºС\n",SVal[i].value/1000);
-							printf("    Статус      - %s\n",StatusDecode(SVal[i].status));
-							printf("\n");
-						}
+						if (SenCount!=0) MakeMethodCall1(&bus, sessionId, 0);
+						else done = TRUE;
+
+                        //done = TRUE;
+                    } else {
+                        AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
+                        /* Try again because of the failure. */
+                        MakeMethodCall(&bus, sessionId);
+                    }
+                }
+                break;
+
+            case AJ_REPLY_ID(BASIC_CLIENT_SENSOR_INFO):
+                {
+                	printf("KEK\n");
+                	int LocalId;
+                	AJ_UnmarshalArgs(&msg, "i", &LocalId);
+				    AJ_UnmarshalArgs(&msg, "siii", &BName[LocalId], &SType[LocalId], &SVal[LocalId].value, &SVal[LocalId].status);
+
+                    if (AJ_OK == status) {				
+						printf("Сенсор №%d:\n",LocalId+1);
+						printf("    Имя         - %s\n",BName[LocalId]);
+						printf("    Тип         - %s\n",TypeDecode(SType[LocalId]));
+						printf("    Температура - %dºС\n",SVal[LocalId].value/1000);
+						printf("    Статус      - %s\n",StatusDecode(SVal[LocalId].status));
+						printf("\n");
 
                         done = TRUE;
                     } else {
