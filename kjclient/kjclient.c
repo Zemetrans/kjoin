@@ -48,7 +48,7 @@ static const char* const sampleInterface[] = {
     "?boardName outStr>s", /* Method at index 0. */
     "?countSensor outStr>i",
     "?sensorValue inStr<i outStr>i outStr1>i",
-    "?sensorInfo inStr<i outStr>i outStr1>i outStr2>i outSt3r>i outStr4>i outStr5>i outSt6r>i",
+    "?sensorInfo inStr<i outStr>i outStr1>i outStr2>i outSt3r>i outStr4>i outStr5>i outSt6r>i outStr7>s",
     NULL
 };
 
@@ -314,10 +314,11 @@ int AJ_Main(void)
                     int hystHi;
                     int alarmLo;
                     int hystLo;
+                    char *name;
                     char type[BUFFER_SIZE];
                     KEApiLibInitialize();
                     
-                    status = AJ_UnmarshalArgs(&msg, "iiiiiii", &sensorType, &min, &max, &alarmHi, &hystHi, &alarmLo, &hystLo);
+                    status = AJ_UnmarshalArgs(&msg, "iiiiiiis", &sensorType, &min, &max, &alarmHi, &hystHi, &alarmLo, &hystLo, &name);
 
                     if (AJ_OK == status) {
                     	sensorType == KEAPI_TEMP_CPU ? strcpy(type, "CPU") :
@@ -327,8 +328,8 @@ int AJ_Main(void)
     			sensorType == KEAPI_TEMP_BACKPLANE ? strcpy(type, "Backplane") :
     			sensorType == KEAPI_TEMP_CHIPSET ? strcpy(type, "Chipset") :
     			sensorType == KEAPI_TEMP_VIDEO ? strcpy(type, "Video\n") : strcpy(type, "Other\n");
-                        AJ_AlwaysPrintf(("Sensor Type: %s\n\t(min temp = %d˚C, max temp = %d˚C)\n\t(alarmHi  = %d˚C,  hystHi  = %d˚C)\n\t(alarmLo  = %d˚C,  hystLo  = %d˚C)\n\n",
-					type, min, max, alarmHi, hystHi, alarmLo, hystLo));
+                        AJ_AlwaysPrintf(("Sensor Type: %s\nSensor Name: %s\n\t(min temp = %d˚C, max temp = %d˚C)\n\t(alarmHi  = %d˚C,  hystHi  = %d˚C)\n\t(alarmLo  = %d˚C,  hystLo  = %d˚C)\n\n",
+					type, name, min, max, alarmHi, hystHi, alarmLo, hystLo));
                         
                         
                         KEApiLibUnInitialize();

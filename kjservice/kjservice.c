@@ -42,7 +42,7 @@ static const char* const sampleInterface[] = {
     "?boardName outStr>s", /* Method at index 0. */
     "?countSensor outStr>i",
     "?sensorValue inStr<i outStr>i outStr1>i",
-    "?sensorInfo inStr<i outStr>i outStr1>i outStr2>i outSt3r>i outStr4>i outStr5>i outSt6r>i",
+    "?sensorInfo inStr<i outStr>i outStr1>i outStr2>i outSt3r>i outStr4>i outStr5>i outSt6r>i outStr6>s",
     NULL
 };
 
@@ -175,7 +175,7 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
     strncat(type, buf, sizeof(buf));*/
     
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, type, 0);
-    AJ_MarshalArgs(&reply, "iiiiiii", SensorInfo.type, SensorInfo.min, SensorInfo.max, SensorInfo.alarmHi, SensorInfo.hystHi,SensorInfo.alarmLo, SensorInfo.hystLo);
+    AJ_MarshalArgs(&reply, "iiiiiiis", SensorInfo.type, SensorInfo.min, SensorInfo.max, SensorInfo.alarmHi, SensorInfo.hystHi,SensorInfo.alarmLo, SensorInfo.hystLo, SensorInfo.name);
     KEApiLibUnInitialize();
     return AJ_DeliverMsg(&reply);
     
