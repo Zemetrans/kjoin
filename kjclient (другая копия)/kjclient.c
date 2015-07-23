@@ -78,7 +78,7 @@ static const AJ_Object AppObjects[] = {
  * See also .\inc\aj_introspect.h
  */
 #define BASIC_CLIENT_CAT AJ_PRX_MESSAGE_ID(0, 0, 0)
-#define BASIC_CLIENT_SENSOR_INFO AJ_APP_MESSAGE_ID(0, 0, 1)
+#define BASIC_CLIENT_SENSOR_INFO AJ_PRX_MESSAGE_ID(0, 0, 1)
 
 #define CONNECT_TIMEOUT    (1000 * 60)
 #define UNMARSHAL_TIMEOUT  (1000 * 5)
@@ -146,10 +146,9 @@ int AJ_Main(void)
     uint8_t connected = FALSE;
     uint8_t done = FALSE;
     uint32_t sessionId = 0;
-    int SenCount,id;
+    int SenCount,id,i=0,SType[20];
     KEAPI_BOARD_INFO BoardInfo;
 	KEAPI_SENSOR_VALUE SVal[20];
-	int i,SType[20];
 	char *BName[20];
 
     /*
@@ -206,7 +205,7 @@ int AJ_Main(void)
 						printf("Дата производства: %s", ctime(&Mtime));
 						printf("Колличество сенсоров: %d\n\n", SenCount);
 
-						if (SenCount!=0) MakeMethodCall1(&bus, sessionId, 0);
+						if (SenCount!=0) MakeMethodCall1(&bus, sessionId, i);
 						else done = TRUE;
 
                         //done = TRUE;
@@ -220,7 +219,6 @@ int AJ_Main(void)
 
             case AJ_REPLY_ID(BASIC_CLIENT_SENSOR_INFO):
                 {
-                	printf("KEK\n");
                 	int LocalId;
                 	AJ_UnmarshalArgs(&msg, "i", &LocalId);
 				    AJ_UnmarshalArgs(&msg, "siii", &BName[LocalId], &SType[LocalId], &SVal[LocalId].value, &SVal[LocalId].status);
@@ -233,7 +231,10 @@ int AJ_Main(void)
 						printf("    Статус      - %s\n",StatusDecode(SVal[LocalId].status));
 						printf("\n");
 
-                        done = TRUE;
+						if (++i<SenCount) 
+							MakeMethodCall1(&bus, sessionId, i);
+						
+                        else done = TRUE;
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */

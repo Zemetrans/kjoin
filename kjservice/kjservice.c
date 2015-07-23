@@ -37,7 +37,8 @@ uint8_t dbgBASIC_SERVICE = 0;
  */
 static const char* const sampleInterface[] = {
     "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
-    "?boardName Name>s Date>i SCount>i SName>s SType>i STemp>i SStatus>i SName>s SType>i STemp>i SStatus>i SName>s SType>i STemp>i SStatus>i", /* Method at index 1. */
+    "?boardName Name>s Date>i SCount>i", /* Method at index 1. */
+    "?sensorStatus id<i idBack>i SName>s SType>i STemp>i SStatus>i",
     NULL
 };
 
@@ -71,6 +72,7 @@ static const AJ_Object AppObjects[] = {
  * See also .\inc\aj_introspect.h
  */
 #define BASIC_SERVICE_CAT AJ_APP_MESSAGE_ID(0, 0, 0)
+#define BASIC_SERVICE_SENSOR_INFO AJ_APP_MESSAGE_ID(0, 0, 1)
 
 static AJ_Status AppHandleCat(AJ_Message* msg)
 {
@@ -98,14 +100,50 @@ static AJ_Status AppHandleCat(AJ_Message* msg)
     //AJ_UnmarshalArgs(msg, "ss", &string0, &string1);
     AJ_MarshalReplyMsg(msg, &reply);
 
-    strncpy(buffer, BoardInfo.boardName, BUFFER_SIZE);
-    buffer[BUFFER_SIZE - 1] = '\0';
-
-    AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buffer, 0);
+    //AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buffer, 0);
     AJ_MarshalArgs(&reply, "sii", BoardInfo.boardName, (int)BoardInfo.manufacturingDate, SenCount);
+	
+    //AJ_MarshalArgs(&reply, "s", "buffer");
+    //AJ_MarshalArg(&reply, &replyArg);
 
-    for (i=0;i<SenCount;i++)
-    	AJ_MarshalArgs(&reply, "siii", SInfo[i].name, SInfo[i].type, SVal[i].value, SVal[i].status);
+	KEApiLibUnInitialize();
+    return AJ_DeliverMsg(&reply);
+
+#undef BUFFER_SIZE
+}
+
+static AJ_Status AppHandleInfo(AJ_Message* msg)
+{
+#define BUFFER_SIZE 256
+	KEApiLibInitialize();
+
+	int SenCount,i,id;
+	KEAPI_BOARD_INFO BoardInfo;
+	KEAPI_SENSOR_VALUE SVal[20];
+	KEAPI_SENSOR_INFO SInfo[20];
+
+	KEApiGetBoardInfo(&BoardInfo);
+	KEApiGetTempSensorCount(&SenCount);
+
+                	//printf("KEK\n");
+    AJ_UnmarshalArgs(msg, "i", &id);
+
+	char buffer[BUFFER_SIZE];
+
+	for (i=0;i<SenCount;i++){
+		KEApiGetTempSensorValue(i,&SVal[i]);
+		KEApiGetTempSensorInfo(i,&SInfo[i]);
+	}
+
+    AJ_Message reply;
+    AJ_Arg replyArg;
+
+    //AJ_UnmarshalArgs(msg, "ss", &string0, &string1);
+    AJ_MarshalReplyMsg(msg, &reply);
+
+    //AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buffer, 0);
+    AJ_MarshalArgs(&reply, "i", id);
+    AJ_MarshalArgs(&reply, "siii", SInfo[id].name, SInfo[id].type, SVal[id].value, SVal[id].status);
 	
     //AJ_MarshalArgs(&reply, "s", "buffer");
     //AJ_MarshalArg(&reply, &replyArg);
@@ -177,6 +215,10 @@ int AJ_Main(void)
 
             case BASIC_SERVICE_CAT:
                 status = AppHandleCat(&msg);
+                break;
+
+            case BASIC_SERVICE_SENSOR_INFO:
+                status = AppHandleInfo(&msg);
                 break;
 
             case AJ_SIGNAL_SESSION_LOST_WITH_REASON:

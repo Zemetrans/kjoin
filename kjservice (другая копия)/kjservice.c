@@ -125,7 +125,8 @@ static AJ_Status AppHandleInfo(AJ_Message* msg)
 	KEApiGetBoardInfo(&BoardInfo);
 	KEApiGetTempSensorCount(&SenCount);
 
-    AJ_UnmarshalArgs(msg, "i", id);
+                	//printf("KEK\n");
+    AJ_UnmarshalArgs(msg, "i", &id);
 
 	char buffer[BUFFER_SIZE];
 
