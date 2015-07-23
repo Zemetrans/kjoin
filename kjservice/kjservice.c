@@ -115,9 +115,6 @@ static AJ_Status AppHandleCount(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorCount(&TempSensorCount);
-    //sprintf(buf, "%d", TempSensorCount);
-    //KEApiLibUnInitialize();
-    
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
     AJ_MarshalArgs(&reply, "i", TempSensorCount);
     KEApiLibUnInitialize();
@@ -151,7 +148,6 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
 {
 #define BUFFER_SIZE 256
     int num;
-    //char buf[BUFFER_SIZE];
     char type[BUFFER_SIZE];
     KEApiLibInitialize();
     KEAPI_SENSOR_INFO SensorInfo;
@@ -162,18 +158,6 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorInfo(num, &SensorInfo);
-    /*SensorInfo.type == KEAPI_TEMP_CPU ? strcpy(type, "Type: CPU\n") :
-    SensorInfo.type == KEAPI_TEMP_BOX ? strcpy(type, "Type: Box\n") :
-    SensorInfo.type == KEAPI_TEMP_ENV ? strcpy(type, "Type: Env\n") :
-    SensorInfo.type == KEAPI_TEMP_BOARD ? strcpy(type, "Type: Board\n") :
-    SensorInfo.type == KEAPI_TEMP_BACKPLANE ? strcpy(type, "Type: Backplane\n") :
-    SensorInfo.type == KEAPI_TEMP_CHIPSET ? strcpy(type, "Type: Chipset\n") :
-    SensorInfo.type == KEAPI_TEMP_VIDEO ? strcpy(type, "Type: Video\n") : strcpy(type, "Type: Other\n");
-    sprintf(buf,"\t(min temp = %d˚C, max temp = %d˚C)\n\t(alarmHi  = %d˚C,  hystHi  = %d˚C)\n\t(alarmLo  = %d˚C,  hystLo  = %d˚C)\n",
-   		SensorInfo.min/1000, SensorInfo.max/1000, SensorInfo.alarmHi/1000, 
-   		SensorInfo.hystHi/1000, SensorInfo.alarmLo/1000, SensorInfo.hystLo/1000);
-    strncat(type, buf, sizeof(buf));*/
-    
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, type, 0);
     AJ_MarshalArgs(&reply, "iiiiiiis", SensorInfo.type, SensorInfo.min, SensorInfo.max, SensorInfo.alarmHi, SensorInfo.hystHi,SensorInfo.alarmLo, SensorInfo.hystLo, SensorInfo.name);
     KEApiLibUnInitialize();
