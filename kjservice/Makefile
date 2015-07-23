@@ -1,4 +1,4 @@
-PRG = kjclient
+PRG = kjservice
 
 AJTCL_BASE = ..
 
