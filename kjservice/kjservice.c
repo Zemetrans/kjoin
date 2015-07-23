@@ -140,10 +140,23 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorValue(num, &SensorValue);
-    SensorValue.status == KEAPI_SENSOR_STATUS_ACTIVE ? strncpy(status,"Active\n", 7) :
-    SensorValue.status == KEAPI_SENSOR_STATUS_ALARM ? strncpy(status, "Alarm\n", 6) :
-    SensorValue.status == KEAPI_SENSOR_STATUS_BROKEN ? strncpy(status, "Broken\n", 7) :
-    						       strncpy(status, "Short Circuit\n", 14);
+    if (SensorValue.status == KEAPI_SENSOR_STATUS_ACTIVE) {
+    	strncat(status, "Active ", 7);
+    }
+    
+    if (SensorValue.status == KEAPI_SENSOR_STATUS_ALARM) { 
+	strncat(status, "Alarm ", 6);
+    }
+    
+    if (SensorValue.status == KEAPI_SENSOR_STATUS_BROKEN) { 
+	strncat(status, "Broken ", 7);
+    }
+    
+    if (SensorValue.status == KEAPI_SENSOR_STATUS_SHORTCIRCUIT) {
+	strncat(status, "Short Circuit ", 14);
+    }
+    
+    status[strlen(status) -1] = '\n';
     sprintf(buf,"Sensor: %d, temp = %d˚C, status: ", num, SensorValue.value/1000);
     strncat(buf, status, sizeof(status));
     KEApiLibUnInitialize();
