@@ -25,6 +25,7 @@
 #include <keapi/keapi.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 static const char ServiceName[] = "ru.rtsoft.dev.kjoin";
 static const char ServicePath[] = "/keapi";
@@ -45,9 +46,9 @@ uint8_t dbgBASIC_CLIENT = 0;
 static const char* const sampleInterface[] = {
     "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
     "?boardName outStr>s", /* Method at index 0. */
-    "?countSensor outStr>s",
-    "?sensorValue inStr<i outStr>s",
-    "?sensorInfo inStr<i outStr>s",
+    "?countSensor outStr>i",
+    "?sensorValue inStr<i outStr>i outStr1>i",
+    "?sensorInfo inStr<i outStr>i outStr1>i outStr2>i outSt3r>i outStr4>i outStr5>i outSt6r>i",
     NULL
 };
 
@@ -244,12 +245,12 @@ int AJ_Main(void)
 
             case AJ_REPLY_ID(BASIC_CLIENT_COUNTSENSOR):
                 {
-                    AJ_Arg arg;
-                    status = AJ_UnmarshalArg(&msg, &arg);
+                    int countSensor;
+                    status = AJ_UnmarshalArgs(&msg, "i", &countSensor);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("Total Sensors: %s\n",arg.val.v_string));
-                        count = atoi(arg.val.v_string);
+                        AJ_AlwaysPrintf(("Total Sensors: %d\n",countSensor));
+                        count = countSensor;
                         flag_val++;
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
@@ -261,32 +262,81 @@ int AJ_Main(void)
             
             case AJ_REPLY_ID(BASIC_CLIENT_SENSORVALUE):
                 {
-                    AJ_Arg arg;
-                    status = AJ_UnmarshalArg(&msg, &arg);
-
+                #define BUFFER_SIZE 256
+                    KEApiLibInitialize();
+                    int value;
+                    int sensorStatus;
+                    char statusBuf[BUFFER_SIZE];
+                    char copyBuf[BUFFER_SIZE];
+                    
+                    status = AJ_UnmarshalArgs(&msg, "ii", &value, &sensorStatus);
+	  	    statusBuf[0] = '\0';
+	  	    copyBuf[0] = '\0';
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("%s", arg.val.v_string));
+                        if ((sensorStatus & 1) == KEAPI_SENSOR_STATUS_ACTIVE) {
+    				sprintf(statusBuf, "Active ");
+    				strcpy(copyBuf, statusBuf);
+   			 }
+    
+   		    	if ((sensorStatus & 2) == KEAPI_SENSOR_STATUS_ALARM) { 
+	            		sprintf(statusBuf, "Alarm %s", copyBuf);
+	            		strcpy(copyBuf, statusBuf);
+   		    	}
+    
+    		    	if ((sensorStatus & 4) == KEAPI_SENSOR_STATUS_BROKEN) { 
+				sprintf(statusBuf, "Broken %s", copyBuf);
+				strcpy(copyBuf, statusBuf);
+    		   	 }
+    
+    		    	if ((sensorStatus & 8) == KEAPI_SENSOR_STATUS_SHORTCIRCUIT) {
+	    			sprintf(statusBuf, "Short Circuit %s", copyBuf);
+	    			strcpy(copyBuf, statusBuf);
+    		   	 }
+                        AJ_AlwaysPrintf(("Sensor: %d, temp = %d˚C, status: %s\n", flag_val_iter, value/1000, statusBuf));
                         flag_info++;
+                    	KEApiLibUnInitialize();
+                #undef BUFFER_SIZE
                         
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
-                        MakeMethodCall1(&bus, sessionId);
+                        MakeMethodCall2(&bus, sessionId, flag_val_iter);
                     }
                 }
                 break;
             case AJ_REPLY_ID(BASIC_CLIENT_SENSORINFO):
                 {
-                    AJ_Arg arg;
-                    status = AJ_UnmarshalArg(&msg, &arg);
+                    #define BUFFER_SIZE 256
+                    int sensorType;
+                    int min;
+                    int max;
+                    int alarmHi;
+                    int hystHi;
+                    int alarmLo;
+                    int hystLo;
+                    char type[BUFFER_SIZE];
+                    KEApiLibInitialize();
+                    
+                    status = AJ_UnmarshalArgs(&msg, "iiiiiii", &sensorType, &min, &max, &alarmHi, &hystHi, &alarmLo, &hystLo);
 
                     if (AJ_OK == status) {
-                        AJ_AlwaysPrintf(("%s\n", arg.val.v_string));
-                                         
+                    	sensorType == KEAPI_TEMP_CPU ? strcpy(type, "CPU") :
+    			sensorType == KEAPI_TEMP_BOX ? strcpy(type, "Box") :
+    			sensorType == KEAPI_TEMP_ENV ? strcpy(type, "Type: Env") :
+    			sensorType == KEAPI_TEMP_BOARD ? strcpy(type, "Board") :
+    			sensorType == KEAPI_TEMP_BACKPLANE ? strcpy(type, "Backplane") :
+    			sensorType == KEAPI_TEMP_CHIPSET ? strcpy(type, "Chipset") :
+    			sensorType == KEAPI_TEMP_VIDEO ? strcpy(type, "Video\n") : strcpy(type, "Other\n");
+                        AJ_AlwaysPrintf(("Sensor Type: %s\n\t(min temp = %d˚C, max temp = %d˚C)\n\t(alarmHi  = %d˚C,  hystHi  = %d˚C)\n\t(alarmLo  = %d˚C,  hystLo  = %d˚C)\n\n",
+					type, min, max, alarmHi, hystHi, alarmLo, hystLo));
+                        
+                        
+                        KEApiLibUnInitialize();
+                #undef BUFFER_SIZE                      
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
-                        MakeMethodCall1(&bus, sessionId);
+                        MakeMethodCall3(&bus, sessionId, flag_val_iter);
                     }
                 }
                 break;
