@@ -140,19 +140,19 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
     AJ_MarshalReplyMsg(msg, &reply);
     
     KEApiGetTempSensorValue(num, &SensorValue);
-    if (SensorValue.status == KEAPI_SENSOR_STATUS_ACTIVE) {
+    if ((SensorValue.status & 1) == KEAPI_SENSOR_STATUS_ACTIVE) {
     	strncat(status, "Active ", 7);
     }
     
-    if (SensorValue.status == KEAPI_SENSOR_STATUS_ALARM) { 
+    if ((SensorValue.status & 2) == KEAPI_SENSOR_STATUS_ALARM) { 
 	strncat(status, "Alarm ", 6);
     }
     
-    if (SensorValue.status == KEAPI_SENSOR_STATUS_BROKEN) { 
+    if ((SensorValue.status & 4) == KEAPI_SENSOR_STATUS_BROKEN) { 
 	strncat(status, "Broken ", 7);
     }
     
-    if (SensorValue.status == KEAPI_SENSOR_STATUS_SHORTCIRCUIT) {
+    if ((SensorValue.status & 8) == KEAPI_SENSOR_STATUS_SHORTCIRCUIT) {
 	strncat(status, "Short Circuit ", 14);
     }
     
