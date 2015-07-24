@@ -45,9 +45,9 @@ uint8_t dbgBASIC_CLIENT = 0;
 static const char* const sampleInterface[] = {
     "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
     "?boardName outStr>s", /* Method at index 0. */
-    "?countSensor outStr>s",
-    "?sensorValue inStr<i outStr>s",
-    "?sensorInfo inStr<i outStr>s",
+    "?countSensor outStr>s", /* Method at index 1. */
+    "?sensorValue inStr<i outStr>s", /* Method at index 2. */
+    "?sensorInfo inStr<i outStr>s", /* Method at index 3. */
     NULL
 };
 
@@ -88,7 +88,7 @@ static const AJ_Object AppObjects[] = {
 #define UNMARSHAL_TIMEOUT  (1000 * 5)
 #define METHOD_TIMEOUT     (100 * 10)
 
-void MakeMethodCall(AJ_BusAttachment* bus, uint32_t sessionId)
+void GetBoardInfo(AJ_BusAttachment* bus, uint32_t sessionId)
 {
     AJ_Status status;
     AJ_Message msg;
@@ -99,10 +99,10 @@ void MakeMethodCall(AJ_BusAttachment* bus, uint32_t sessionId)
         status = AJ_DeliverMsg(&msg);
     }
 
-    AJ_InfoPrintf(("MakeMethodCall() resulted in a status of 0x%04x.\n", status));
+    AJ_InfoPrintf(("GetBoardInfo() resulted in a status of 0x%04x.\n", status));
 }
 
-void MakeMethodCall1(AJ_BusAttachment* bus, uint32_t sessionId)
+void GetCountSensor(AJ_BusAttachment* bus, uint32_t sessionId)
 {
     AJ_Status status;
     AJ_Message msg;
@@ -113,10 +113,10 @@ void MakeMethodCall1(AJ_BusAttachment* bus, uint32_t sessionId)
         status = AJ_DeliverMsg(&msg);
     }
 
-    AJ_InfoPrintf(("MakeMethodCall1() resulted in a status of 0x%04x.\n", status));
+    AJ_InfoPrintf(("GetCountSensor() resulted in a status of 0x%04x.\n", status));
 }
 
-void MakeMethodCall2(AJ_BusAttachment* bus, uint32_t sessionId, int numSen)
+void GetSensorValue(AJ_BusAttachment* bus, uint32_t sessionId, int numSen)
 {
     AJ_Status status;
     AJ_Message msg;
@@ -131,10 +131,10 @@ void MakeMethodCall2(AJ_BusAttachment* bus, uint32_t sessionId, int numSen)
         status = AJ_DeliverMsg(&msg);
     }
 
-    AJ_InfoPrintf(("MakeMethodCall2() resulted in a status of 0x%04x.\n", status));
+    AJ_InfoPrintf(("GetSensorValue() resulted in a status of 0x%04x.\n", status));
 }
 
-void MakeMethodCall3(AJ_BusAttachment* bus, uint32_t sessionId, int numSen)
+void GetSensorInfo(AJ_BusAttachment* bus, uint32_t sessionId, int numSen)
 {
     AJ_Status status;
     AJ_Message msg;
@@ -149,7 +149,7 @@ void MakeMethodCall3(AJ_BusAttachment* bus, uint32_t sessionId, int numSen)
         status = AJ_DeliverMsg(&msg);
     }
 
-    AJ_InfoPrintf(("MakeMethodCall2() resulted in a status of 0x%04x.\n", status));
+    AJ_InfoPrintf(("GetSensorValue() resulted in a status of 0x%04x.\n", status));
 }
 int AJ_Main(void)
 {
@@ -165,7 +165,7 @@ int AJ_Main(void)
     AJ_Initialize();
     AJ_PrintXML(AppObjects);
     AJ_RegisterObjects(NULL, AppObjects);
-    
+
     int flag = 1;
     int flag_val = 0;
     int flag_info = 0;
@@ -189,7 +189,7 @@ int AJ_Main(void)
                 AJ_InfoPrintf(("StartClient returned %d, sessionId=%u.\n", status, sessionId));
                 connected = TRUE;
 		if (flag) {
-                	MakeMethodCall(&bus, sessionId);
+                	GetBoardInfo(&bus, sessionId);
                 }
             } else {
                 AJ_InfoPrintf(("StartClient returned 0x%04x.\n", status));
@@ -200,22 +200,22 @@ int AJ_Main(void)
 		done = TRUE;
 		continue;
 	}
-	
+
 	if (!flag) {
-		MakeMethodCall1(&bus, sessionId);
+		GetCountSensor(&bus, sessionId);
 		flag++;
 	}
-	
+
 	if ((flag_val) && (!flag_info)) {
-		MakeMethodCall2(&bus, sessionId, flag_val_iter);
+		GetSensorValue(&bus, sessionId, flag_val_iter);
 	}
-	
+
 	if (flag_info) {
-		MakeMethodCall3(&bus, sessionId, flag_val_iter);
+		GetSensorInfo(&bus, sessionId, flag_val_iter);
 		flag_info--;
 		++flag_val_iter;
 	}
-	
+
         status = AJ_UnmarshalMsg(&bus, &msg, UNMARSHAL_TIMEOUT);
 
         if (AJ_ERR_TIMEOUT == status) {
@@ -233,11 +233,11 @@ int AJ_Main(void)
                     if (AJ_OK == status) {
                         AJ_AlwaysPrintf(("Board Info: %s\n", arg.val.v_string));
                         --flag;
-                                      
+
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
-                        MakeMethodCall(&bus, sessionId);
+                        GetBoardInfo(&bus, sessionId);
                     }
                 }
                 break;
@@ -254,11 +254,11 @@ int AJ_Main(void)
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
-                        MakeMethodCall1(&bus, sessionId);
+                        GetCountSensor(&bus, sessionId);
                     }
                 }
                 break;
-            
+
             case AJ_REPLY_ID(BASIC_CLIENT_SENSORVALUE):
                 {
                     AJ_Arg arg;
@@ -267,11 +267,11 @@ int AJ_Main(void)
                     if (AJ_OK == status) {
                         AJ_AlwaysPrintf(("%s", arg.val.v_string));
                         flag_info++;
-                        
+
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
-                        MakeMethodCall1(&bus, sessionId);
+                        GetCountSensor(&bus, sessionId);
                     }
                 }
                 break;
@@ -282,15 +282,15 @@ int AJ_Main(void)
 
                     if (AJ_OK == status) {
                         AJ_AlwaysPrintf(("%s\n", arg.val.v_string));
-                                         
+
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
                         /* Try again because of the failure. */
-                        MakeMethodCall1(&bus, sessionId);
+                        GetCountSensor(&bus, sessionId);
                     }
                 }
                 break;
-                
+
             case AJ_SIGNAL_SESSION_LOST_WITH_REASON:
                 /* A session was lost so return error to force a disconnect. */
                 {
@@ -309,9 +309,9 @@ int AJ_Main(void)
         }
 
         /* Messages MUST be discarded to free resources. */
-        
+
         AJ_CloseMsg(&msg);
-      
+
 
         if (status == AJ_ERR_SESSION_LOST) {
             AJ_AlwaysPrintf(("AllJoyn disconnect.\n"));

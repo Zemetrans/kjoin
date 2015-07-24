@@ -84,18 +84,13 @@ static AJ_Status AppHandleInfo(AJ_Message* msg)
 {
 #define BUFFER_SIZE 256
     char buffer[BUFFER_SIZE];
-    KEApiLibInitialize();
     KEAPI_BOARD_INFO BoardInfo;
     KEApiGetBoardInfo(&BoardInfo);
     AJ_Message reply;
     AJ_Arg replyArg;
-
     AJ_MarshalReplyMsg(msg, &reply);
-
-    /* We have the arguments. Now do the concatenation. */
     strncpy(buffer, BoardInfo.boardName, BUFFER_SIZE);
     buffer[BUFFER_SIZE - 1] = '\0';
-    KEApiLibUnInitialize();
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buffer, 0);
     AJ_MarshalArg(&reply, &replyArg);
     return AJ_DeliverMsg(&reply);
@@ -107,21 +102,16 @@ static AJ_Status AppHandleCount(AJ_Message* msg)
 {
 #define BUFFER_SIZE 20
     char buf[BUFFER_SIZE];
-    KEApiLibInitialize();
     int32_t TempSensorCount;
     AJ_Message reply;
     AJ_Arg replyArg;
-      
     AJ_MarshalReplyMsg(msg, &reply);
-    
     KEApiGetTempSensorCount(&TempSensorCount);
     sprintf(buf, "%d", TempSensorCount);
-    KEApiLibUnInitialize();
-    
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
     AJ_MarshalArg(&reply, &replyArg);
     return AJ_DeliverMsg(&reply);
-    
+
 #undef BUFFER_SIZE
 }
 
@@ -131,40 +121,36 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
     int num;
     char buf[BUFFER_SIZE];
     char status[BUFFER_SIZE];
-    KEApiLibInitialize();
     KEAPI_SENSOR_VALUE SensorValue;
     AJ_Message reply;
     AJ_Arg replyArg;
-    
+
     AJ_UnmarshalArgs(msg, "i", &num);
     AJ_MarshalReplyMsg(msg, &reply);
-    
+
     KEApiGetTempSensorValue(num, &SensorValue);
     if ((SensorValue.status & 1) == KEAPI_SENSOR_STATUS_ACTIVE) {
     	strncat(status, "Active ", 7);
     }
-    
-    if ((SensorValue.status & 2) == KEAPI_SENSOR_STATUS_ALARM) { 
+
+    if ((SensorValue.status & 2) == KEAPI_SENSOR_STATUS_ALARM) {
 	strncat(status, "Alarm ", 6);
     }
-    
-    if ((SensorValue.status & 4) == KEAPI_SENSOR_STATUS_BROKEN) { 
+
+    if ((SensorValue.status & 4) == KEAPI_SENSOR_STATUS_BROKEN) {
 	strncat(status, "Broken ", 7);
     }
-    
+
     if ((SensorValue.status & 8) == KEAPI_SENSOR_STATUS_SHORTCIRCUIT) {
 	strncat(status, "Short Circuit ", 14);
     }
-    
     status[strlen(status) -1] = '\n';
-    sprintf(buf,"Sensor: %d, temp = %d˚C, status: ", num, SensorValue.value/1000);
+    sprintf(buf,"Sensor: %d, temp = %d˚C\nstatus: ", num, SensorValue.value/1000);
     strncat(buf, status, sizeof(status));
-    KEApiLibUnInitialize();
-    
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
     AJ_MarshalArg(&reply, &replyArg);
     return AJ_DeliverMsg(&reply);
-    
+
 #undef BUFFER_SIZE
 }
 static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
@@ -173,32 +159,29 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
     int num;
     char buf[BUFFER_SIZE];
     char type[BUFFER_SIZE];
-    KEApiLibInitialize();
     KEAPI_SENSOR_INFO SensorInfo;
     AJ_Message reply;
     AJ_Arg replyArg;
-    
+
     AJ_UnmarshalArgs(msg, "i", &num);
     AJ_MarshalReplyMsg(msg, &reply);
-    
+
     KEApiGetTempSensorInfo(num, &SensorInfo);
-    SensorInfo.type == KEAPI_TEMP_CPU ? strcpy(type, "Type: CPU\n") :
-    SensorInfo.type == KEAPI_TEMP_BOX ? strcpy(type, "Type: Box\n") :
-    SensorInfo.type == KEAPI_TEMP_ENV ? strcpy(type, "Type: Env\n") :
-    SensorInfo.type == KEAPI_TEMP_BOARD ? strcpy(type, "Type: Board\n") :
-    SensorInfo.type == KEAPI_TEMP_BACKPLANE ? strcpy(type, "Type: Backplane\n") :
-    SensorInfo.type == KEAPI_TEMP_CHIPSET ? strcpy(type, "Type: Chipset\n") :
-    SensorInfo.type == KEAPI_TEMP_VIDEO ? strcpy(type, "Type: Video\n") : strcpy(type, "Type: Other\n");
-    sprintf(buf,"\t(min temp = %d˚C, max temp = %d˚C)\n\t(alarmHi  = %d˚C,  hystHi  = %d˚C)\n\t(alarmLo  = %d˚C,  hystLo  = %d˚C)\n",
-   		SensorInfo.min/1000, SensorInfo.max/1000, SensorInfo.alarmHi/1000, 
-   		SensorInfo.hystHi/1000, SensorInfo.alarmLo/1000, SensorInfo.hystLo/1000);
+    SensorInfo.type == KEAPI_TEMP_CPU ? strcpy(type, "\nType: CPU\n") :
+    SensorInfo.type == KEAPI_TEMP_BOX ? strcpy(type, "\nType: Box\n") :
+    SensorInfo.type == KEAPI_TEMP_ENV ? strcpy(type, "\nType: Env\n") :
+    SensorInfo.type == KEAPI_TEMP_BOARD ? strcpy(type, "\nType: Board\n") :
+    SensorInfo.type == KEAPI_TEMP_BACKPLANE ? strcpy(type, "\nType: Backplane\n") :
+    SensorInfo.type == KEAPI_TEMP_CHIPSET ? strcpy(type, "\nType: Chipset\n") :
+    SensorInfo.type == KEAPI_TEMP_VIDEO ? strcpy(type, "\nType: Video\n") : strcpy(type, "Type: Other\n");
+    //sprintf(buf,"\t(min temp = %d˚C, max temp = %d˚C)\n\t(alarmHi  = %d˚C,  hystHi  = %d˚C)\n\t(alarmLo  = %d˚C,  hystLo  = %d˚C)\n",
+   	//	SensorInfo.min/1000, SensorInfo.max/1000, SensorInfo.alarmHi/1000,
+   	//	SensorInfo.hystHi/1000, SensorInfo.alarmLo/1000, SensorInfo.hystLo/1000);
     strncat(type, buf, sizeof(buf));
-    KEApiLibUnInitialize();
-    
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, type, 0);
     AJ_MarshalArg(&reply, &replyArg);
     return AJ_DeliverMsg(&reply);
-    
+
 #undef BUFFER_SIZE
 }
 /* All times are expressed in milliseconds. */
@@ -208,6 +191,7 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
 
 int AJ_Main(void)
 {
+    KEApiLibInitialize();
     AJ_Status status = AJ_OK;
     AJ_BusAttachment bus;
     uint8_t connected = FALSE;
@@ -267,15 +251,15 @@ int AJ_Main(void)
             case BASIC_SERVICE_COUNTSENSOR:
             	status = AppHandleCount(&msg);
             	break;
-            
+
             case BASIC_SERVICE_SENSORVALUE:
             	status = AppHandleValue(&msg);
             	break;
-            	
+
             case BASIC_SERVICE_SENSORINFO:
             	status = AppHandleSensorInfo(&msg);
             	break;
-            	
+
             case AJ_SIGNAL_SESSION_LOST_WITH_REASON:
                 {
                     uint32_t id, reason;
@@ -305,7 +289,7 @@ int AJ_Main(void)
     }
 
     AJ_AlwaysPrintf(("Basic service exiting with status %d.\n", status));
-
+    KEApiLibUnInitialize();
     return status;
 }
 
