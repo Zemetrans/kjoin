@@ -1,0 +1,8 @@
+dea@dea-VirtualBox-ubuntu64:~/kjoin/kjclient$ ./kjclient 
+StartClient returned AJ_OK, sessionId=2259792423.
+82000000 : 10000 messages received in 15 seconds (1.50 ms per message).
+82000001 : 10000 messages received in 13 seconds (1.30 ms per message).
+82000002 : 10000 messages received in 15 seconds (1.50 ms per message).
+82000003 : 10000 messages received in 14 seconds (1.40 ms per message).
+KJoin client finished with status 0.
+
