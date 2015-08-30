@@ -39,10 +39,10 @@ uint8_t dbgBASIC_SERVICE = 0;
  */
 static const char* const sampleInterface[] = {
     "ru.rtsoft.dev.kjoin",   /* The first entry is the interface name. */
-    "?boardName outStr>s", /* Method at index 0. */
-    "?countSensor outStr>i",
-    "?sensorValue inStr<i outStr>i outStr1>i",
-    "?sensorInfo inStr<i outStr>i outStr1>i outStr2>i outSt3r>i outStr4>i outStr5>i outSt6r>i outStr6>s",
+    "?boardName bName>s", /* Method at index 0. */
+    "?countSensor count>i",
+    "?sensorValue sensorNumber<i value>i status>i",
+    "?sensorInfo sensorNumber<i type>i min>i max>i alarmHi>i hystHi>i alarmLo>i hystLo>i name>s",
     NULL
 };
 
