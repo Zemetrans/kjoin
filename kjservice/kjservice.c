@@ -84,7 +84,6 @@ static AJ_Status AppHandleInfo(AJ_Message* msg)
 {
 #define BUFFER_SIZE 256
     char buffer[BUFFER_SIZE];
-    KEApiLibInitialize();
     KEAPI_BOARD_INFO BoardInfo;
     KEApiGetBoardInfo(&BoardInfo);
     AJ_Message reply;
@@ -95,7 +94,6 @@ static AJ_Status AppHandleInfo(AJ_Message* msg)
     /* We have the arguments. Now do the concatenation. */
     strncpy(buffer, BoardInfo.boardName, BUFFER_SIZE);
     buffer[BUFFER_SIZE - 1] = '\0';
-    KEApiLibUnInitialize();
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buffer, 0);
     AJ_MarshalArg(&reply, &replyArg);
     return AJ_DeliverMsg(&reply);
@@ -107,7 +105,6 @@ static AJ_Status AppHandleCount(AJ_Message* msg)
 {
 #define BUFFER_SIZE 20
     char buf[BUFFER_SIZE];
-    KEApiLibInitialize();
     int32_t TempSensorCount;
     AJ_Message reply;
     AJ_Arg replyArg;
@@ -117,7 +114,6 @@ static AJ_Status AppHandleCount(AJ_Message* msg)
     KEApiGetTempSensorCount(&TempSensorCount);
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
     AJ_MarshalArgs(&reply, "i", TempSensorCount);
-    KEApiLibUnInitialize();
     return AJ_DeliverMsg(&reply);
     
 #undef BUFFER_SIZE
@@ -128,7 +124,6 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
 #define BUFFER_SIZE 256
     int num;
     char buf[BUFFER_SIZE];
-    KEApiLibInitialize();
     KEAPI_SENSOR_VALUE SensorValue;
     AJ_Message reply;
     AJ_Arg replyArg;
@@ -139,7 +134,6 @@ static AJ_Status AppHandleValue(AJ_Message* msg)
     
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, buf, 0);
     AJ_MarshalArgs(&reply, "ii", SensorValue.value, SensorValue.status);
-    KEApiLibUnInitialize();
     return AJ_DeliverMsg(&reply);
     
 #undef BUFFER_SIZE
@@ -149,7 +143,6 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
 #define BUFFER_SIZE 256
     int num;
     char type[BUFFER_SIZE];
-    KEApiLibInitialize();
     KEAPI_SENSOR_INFO SensorInfo;
     AJ_Message reply;
     AJ_Arg replyArg;
@@ -160,7 +153,6 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
     KEApiGetTempSensorInfo(num, &SensorInfo);
     AJ_InitArg(&replyArg, AJ_ARG_STRING, 0, type, 0);
     AJ_MarshalArgs(&reply, "iiiiiiis", SensorInfo.type, SensorInfo.min, SensorInfo.max, SensorInfo.alarmHi, SensorInfo.hystHi,SensorInfo.alarmLo, SensorInfo.hystLo, SensorInfo.name);
-    KEApiLibUnInitialize();
     return AJ_DeliverMsg(&reply);
     
 #undef BUFFER_SIZE
@@ -172,6 +164,7 @@ static AJ_Status AppHandleSensorInfo(AJ_Message* msg)
 
 int AJ_Main(void)
 {
+	KEApiLibInitialize();
     AJ_Status status = AJ_OK;
     AJ_BusAttachment bus;
     uint8_t connected = FALSE;
@@ -269,7 +262,7 @@ int AJ_Main(void)
     }
 
     AJ_AlwaysPrintf(("Basic service exiting with status %d.\n", status));
-
+    KEApiLibUnInitialize();
     return status;
 }
 
