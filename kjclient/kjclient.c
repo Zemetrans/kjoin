@@ -263,7 +263,6 @@ int AJ_Main(void)
             case AJ_REPLY_ID(BASIC_CLIENT_SENSORVALUE):
                 {
                 #define BUFFER_SIZE 256
-                    KEApiLibInitialize();
                     int value;
                     int sensorStatus;
                     char statusBuf[BUFFER_SIZE];
@@ -294,7 +293,6 @@ int AJ_Main(void)
     		   	 }
                         AJ_AlwaysPrintf(("Sensor: %d, temp = %d˚C, status: %s\n", flag_val_iter, value/1000, statusBuf));
                         flag_info++;
-                    	KEApiLibUnInitialize();
                 #undef BUFFER_SIZE
                         
                     } else {
@@ -316,7 +314,6 @@ int AJ_Main(void)
                     int hystLo;
                     char *name;
                     char type[BUFFER_SIZE];
-                    KEApiLibInitialize();
                     
                     status = AJ_UnmarshalArgs(&msg, "iiiiiiis", &sensorType, &min, &max, &alarmHi, &hystHi, &alarmLo, &hystLo, &name);
 
@@ -329,10 +326,8 @@ int AJ_Main(void)
     			sensorType == KEAPI_TEMP_CHIPSET ? strcpy(type, "Chipset") :
     			sensorType == KEAPI_TEMP_VIDEO ? strcpy(type, "Video\n") : strcpy(type, "Other\n");
                         AJ_AlwaysPrintf(("Sensor Type: %s\nSensor Name: %s\n\t(min temp = %d˚C, max temp = %d˚C)\n\t(alarmHi  = %d˚C,  hystHi  = %d˚C)\n\t(alarmLo  = %d˚C,  hystLo  = %d˚C)\n\n",
-					type, name, min, max, alarmHi, hystHi, alarmLo, hystLo));
+					type, name, min/1000, max/1000, alarmHi/1000, hystHi/1000, alarmLo/1000, hystLo/1000));
                         
-                        
-                        KEApiLibUnInitialize();
                 #undef BUFFER_SIZE                      
                     } else {
                         AJ_InfoPrintf(("AJ_UnmarshalArg() returned status %d.\n", status));
